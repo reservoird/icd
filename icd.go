@@ -30,5 +30,5 @@ type Digester interface {
 // struct channel and wait group are for graceful shutdown of expeller plugin
 type Expeller interface {
 	Config(string) error
-	Expel(Queue, <-chan struct{}, *sync.WaitGroup) error
+	Expel([]Queue, <-chan struct{}, *sync.WaitGroup) error
 }
