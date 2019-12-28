@@ -10,7 +10,6 @@ type Queue interface {
 	Config(string) error
 	Push(interface{}) error
 	Pop() (interface{}, error)
-	Closed() bool
 	Close() error
 }
 
