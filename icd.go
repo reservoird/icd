@@ -8,8 +8,12 @@ import (
 type Queue interface {
 	Name() string
 	Config(string) error
-	Push(interface{}) error
-	Pop() (interface{}, error)
+	Put(interface{}) error
+	Get() (interface{}, error)
+	Peek() (interface{}, error)
+	Len() int
+	Cap() int
+	Clear()
 	Close() error
 }
 
