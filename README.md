@@ -7,7 +7,7 @@ github.com/reservoird/reservoird
 There are 4 plugin types that the reservoird system supports:
 
 - Queue: Queues provides a communication path between plugin types
-- Ingester: Ingests data from a source and forwards to a digester or expeller for further processin
+- Ingester: Ingests data from a source and forwards to a digester or expeller for further processing
 - Digester: Digests data from an ingester and forwards to another digester or an expeller for further processing
 - Expeller: Expels data from an ingester or digester external to reservoird.
 
@@ -28,14 +28,15 @@ func New(cfg string, stats chan <-string) (icd.Ingester, error) {
     // Set up and configure stdin ingester
 }
 
+// long running function with reads from stdin and adds the result to the Queue.
 func Ingest(queue Queue, doneChan <-chan struct{}, wg *sync.WaitGroup) {
-    // long running function with reads from stdin and adds the
-    // result to the Queue.
-    //
     // first line of the function must be wg.Done() as reservoird waits for all threads to stop
     // before exiting.
     //
+    // reads from stdin writes to queue
+    //
     // non-blocking listen on doneChan each loop to see if reservoird is shutting down gracefully
+    // NOTE: only senders should close the queue
     //
     // non-blocking send on stats channel each loop provides ingester statistics information
 }
