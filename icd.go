@@ -14,6 +14,7 @@ type Queue interface {
 	Cap() int
 	Clear()
 	Close() error
+	Closed() bool
 }
 
 // Ingester provides interface for plugins that ingest (push) data into reservoird
