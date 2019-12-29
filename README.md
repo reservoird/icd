@@ -2,7 +2,7 @@
 
 This is the ICD (interface control document) for plugins to be successfully
 used within the reservoird system. For reservoird architecture please see
-github.com/reservoird/reservoird
+https://github.com/reservoird/reservoird
 
 There are 4 plugin types that the reservoird system supports:
 
@@ -15,7 +15,7 @@ The godoc provides details of each function required and a description of what f
 
 Example:
 
-We want ingester to read data from stdin. (See github.com/reservoird/stdin for actual implementation)
+We want ingester to read data from stdin. (See https://github.com/reservoird/stdin for actual implementation)
 
 ```
 package main // plugins require main package name
