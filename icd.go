@@ -18,9 +18,9 @@ import (
 // types.
 type Queue interface {
 	Name() string               // Name of the queue
-	Put(interface{}) error      // Put an item into the back of the queue
-	Get() (interface{}, error)  // Get an item from the front of the queue
-	Peek() (interface{}, error) // Peek at an item in the front of the queue
+	Put(interface{}) error      // Put an item into the queue
+	Get() (interface{}, error)  // Get an item from the queue
+	Peek() (interface{}, error) // Peek at an item in the queue
 	Len() int                   // Len returns the length of the queue
 	Cap() int                   // Cap returns the capacity of the queue
 	Clear()                     // Clear zeros out the queue
@@ -57,8 +57,8 @@ type Digester interface {
 	// Digest is a long running function which captures data from one queue,
 	// processes, and then forwards data through another queue for further processing
 	//
-	// inQueue: The first queue which the digester receives data from
-	// outQueue: The second queue which the digester forwards data through
+	// inQueue: The queue which the digester receives data from
+	// outQueue: The queue which the digester forwards data through
 	// doneChan: The channel used to gracefully stop the long running function.
 	//     If data is present on this channel initiate graceful shutdown
 	// waitGroup: Call 'waitGroup.Done()' on function start. Reservoird uses
