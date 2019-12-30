@@ -2,7 +2,7 @@
 // in order to be used within the reservoird framework. Each plugin
 // must provide a 'New' function with the following function signature:
 //
-//   New(cfg string, stats chan<- string) (icd.<interface>, error)
+//   New(cfg string) (icd.<interface>, error)
 //
 // Reservoird will not start plugins without the New function as
 // defined.
