@@ -24,6 +24,8 @@ type Queue interface {
 	Len() int                   // Len returns the length of the queue
 	Cap() int                   // Cap returns the capacity of the queue
 	Clear()                     // Clear zeros out the queue
+	Stats() string              // Returns marshalled stats NOTE: MUST be thread safe
+	ClearStats()                // Clears stats NOTE: MUST be thread safe
 	Close() error               // Close closes the queue, can no longer be used
 	Closed() bool               // Closed provides the state of the queue, open or closed
 }
@@ -45,6 +47,12 @@ type Ingester interface {
 	//     this variable to wait for all threads to stop before exiting
 	// error: Returns and error if there is an issue.
 	Ingest(outQueue Queue, doneChan <-chan struct{}, waitGroup *sync.WaitGroup) error
+
+	// Returns marshalled stats NOTE: MUST be thread safe
+	Stats() string
+
+	// Clears stats NOTE: MUST be thread safe
+	ClearStats()
 }
 
 // Digester is the inteface for the reservoird digester plugin type. This
@@ -65,6 +73,12 @@ type Digester interface {
 	//     this variable to wait for all threads to stop before exiting
 	// error: Returns and error if there is an issue.
 	Digest(inQueue Queue, outQueue Queue, doneChan <-chan struct{}, waitGroup *sync.WaitGroup) error
+
+	// Returns marshalled stats NOTE: MUST be thread safe
+	Stats() string
+
+	// Clears stats NOTE: MUST be thread safe
+	ClearStats()
 }
 
 // Expeller is the inteface for the reservoird expeller plugin type. This
@@ -84,4 +98,10 @@ type Expeller interface {
 	//     this variable to wait for all threads to stop before exiting
 	// error: Returns and error if there is an issue.
 	Expel(inQueues []Queue, doneChan <-chan struct{}, waitGroup *sync.WaitGroup) error
+
+	// Returns marshalled stats NOTE: MUST be thread safe
+	Stats() string
+
+	// Clears stats NOTE: MUST be thread safe
+	ClearStats()
 }
