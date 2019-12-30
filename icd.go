@@ -24,7 +24,7 @@ type Queue interface {
 	Len() int                   // Len returns the length of the queue
 	Cap() int                   // Cap returns the capacity of the queue
 	Clear()                     // Clear zeros out the queue
-	Stats() string              // Returns marshalled stats NOTE: MUST be thread safe
+	Stats() (string, error)     // Returns marshalled stats NOTE: MUST be thread safe
 	ClearStats()                // Clears stats NOTE: MUST be thread safe
 	Close() error               // Close closes the queue, can no longer be used
 	Closed() bool               // Closed provides the state of the queue, open or closed
@@ -49,7 +49,7 @@ type Ingester interface {
 	Ingest(outQueue Queue, doneChan <-chan struct{}, waitGroup *sync.WaitGroup) error
 
 	// Returns marshalled stats NOTE: MUST be thread safe
-	Stats() string
+	Stats() (string, error)
 
 	// Clears stats NOTE: MUST be thread safe
 	ClearStats()
@@ -75,7 +75,7 @@ type Digester interface {
 	Digest(inQueue Queue, outQueue Queue, doneChan <-chan struct{}, waitGroup *sync.WaitGroup) error
 
 	// Returns marshalled stats NOTE: MUST be thread safe
-	Stats() string
+	Stats() (string, error)
 
 	// Clears stats NOTE: MUST be thread safe
 	ClearStats()
@@ -100,7 +100,7 @@ type Expeller interface {
 	Expel(inQueues []Queue, doneChan <-chan struct{}, waitGroup *sync.WaitGroup) error
 
 	// Returns marshalled stats NOTE: MUST be thread safe
-	Stats() string
+	Stats() (string, error)
 
 	// Clears stats NOTE: MUST be thread safe
 	ClearStats()
