@@ -24,7 +24,7 @@ import (
     // any dependancies
 )
 
-func New(cfg string, stats chan <-string) (icd.Ingester, error) {
+func New(cfg string) (icd.Ingester, error) {
     // Set up and configure stdin ingester
 }
 
@@ -33,11 +33,27 @@ func Ingest(queue Queue, doneChan <-chan struct{}, wg *sync.WaitGroup) {
     // first line of the function must be wg.Done() as reservoird waits for all threads to stop
     // before exiting.
     //
-    // reads from stdin writes to queue
+    // reads from stdin and writes to queue
+    //
+    // non-blocking listen on clearChan each loop, if received clears statistics
     //
     // non-blocking listen on doneChan each loop to see if reservoird is shutting down gracefully
     // NOTE: only senders should close the queue
     //
-    // non-blocking send on stats channel each loop provides ingester statistics information
+    // non-blocking send to statsChan which provides the latest snapshot of statistics
+}
+
+// returns marshalled statistics
+func Stats() (stats string, err error) {
+    // non-blocking listen on statsChan
+    //
+    // marshals received statistics message
+    //
+    // returns statistics to caller 
+}
+
+// clears statistics
+func ClearStats() {
+    // non-blocking send to clearChan which initiates the clearing of statistics
 }
 ```
