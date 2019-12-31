@@ -44,17 +44,10 @@ type Queue interface {
 	// Closed returns whether or not the queue is closed
 	Closed() bool
 
-	// Returns the marshalled stats
+	// Monitor provides a method for statistics and clears statistics
 	//
-	// NOTE: Stats functions run in a different thread than
-	// queue access therefore access to stats MUST be thread safe
-	Stats() (string, error)
-
-	// Clears stats
-	//
-	// NOTE: Stats functions run in a different thread than
-	// queue access therefore access to stats MUST be thread safe
-	ClearStats()
+	// NOTE: monitor runs in a separate thread
+	Monitor(<-chan string, chan<- struct{})
 }
 
 // Ingester is the inteface for the reservoird ingester plugin type. This
@@ -75,17 +68,10 @@ type Ingester interface {
 	// error: Returns and error if there is an issue.
 	Ingest(outQueue Queue, doneChan <-chan struct{}, waitGroup *sync.WaitGroup) error
 
-	// Returns marshalled stats
+	// Monitor provides a method for statistics and clears statistics
 	//
-	// NOTE: Stats functions run in a different thread than
-	// ingest function therefore access to stats MUST be thread safe
-	Stats() (string, error)
-
-	// Clears stats
-	//
-	// NOTE: Stats functions run in a different thread than
-	// ingest function therefore access to stats MUST be thread safe
-	ClearStats()
+	// NOTE: monitor runs in a separate thread
+	Monitor(<-chan string, chan<- struct{})
 }
 
 // Digester is the inteface for the reservoird digester plugin type. This
@@ -107,17 +93,10 @@ type Digester interface {
 	// error: Returns and error if there is an issue.
 	Digest(inQueue Queue, outQueue Queue, doneChan <-chan struct{}, waitGroup *sync.WaitGroup) error
 
-	// Returns marshalled stats
+	// Monitor provides a method for statistics and clears statistics
 	//
-	// NOTE: Stats functions run in a different thread than
-	// digest function therefore access to stats MUST be thread safe
-	Stats() (string, error)
-
-	// Clears stats
-	//
-	// NOTE: Stats functions run in a different thread than
-	// digest function therefore access to stats MUST be thread safe
-	ClearStats()
+	// NOTE: monitor runs in a separate thread
+	Monitor(<-chan string, chan<- struct{})
 }
 
 // Expeller is the inteface for the reservoird expeller plugin type. This
@@ -138,15 +117,8 @@ type Expeller interface {
 	// error: Returns and error if there is an issue.
 	Expel(inQueues []Queue, doneChan <-chan struct{}, waitGroup *sync.WaitGroup) error
 
-	// Returns marshalled stats
+	// Monitor provides a method for statistics and clears statistics
 	//
-	// NOTE: Stats functions run in a different thread than
-	// digest function therefore access to stats MUST be thread safe
-	Stats() (string, error)
-
-	// Clears stats
-	//
-	// NOTE: Stats functions run in a different thread than
-	// expel function therefore access to stats MUST be thread safe
-	ClearStats()
+	// NOTE: monitor runs in a separate thread
+	Monitor(<-chan string, chan<- struct{})
 }
