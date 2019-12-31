@@ -17,17 +17,44 @@ import (
 // the ingester, digester, and expeller reservoird plugin
 // types.
 type Queue interface {
-	Name() string               // Name of the queue
-	Put(interface{}) error      // Put an item into the queue
-	Get() (interface{}, error)  // Get an item from the queue
-	Peek() (interface{}, error) // Peek at an item in the queue
-	Len() int                   // Len returns the length of the queue
-	Cap() int                   // Cap returns the capacity of the queue
-	Clear()                     // Clear zeros out the queue
-	Stats() (string, error)     // Returns marshalled stats NOTE: MUST be thread safe
-	ClearStats()                // Clears stats NOTE: MUST be thread safe
-	Close() error               // Close closes the queue, can no longer be used
-	Closed() bool               // Closed provides the state of the queue, open or closed
+	// Name provides the name of the queue
+	Name() string
+
+	// Put puts an item into the queue
+	Put(interface{}) error
+
+	// Get gets the next item from the queue
+	Get() (interface{}, error)
+
+	// Peek peeks at the next item in the queue
+	Peek() (interface{}, error)
+
+	// Len returns the length of the queue
+	Len() int
+
+	// Cap returns the capacity of the queue, if unbounded return -1
+	Cap() int
+
+	// Clears the queue
+	Clear()
+
+	// Close closes the queue, no longer usable
+	Close() error
+
+	// Closed returns whether or not the queue is closed
+	Closed() bool
+
+	// Returns the marshalled stats
+	//
+	// NOTE: Stats functions run in a different thread than
+	// queue access therefore access to stats MUST be thread safe
+	Stats() (string, error)
+
+	// Clears stats
+	//
+	// NOTE: Stats functions run in a different thread than
+	// queue access therefore access to stats MUST be thread safe
+	ClearStats()
 }
 
 // Ingester is the inteface for the reservoird ingester plugin type. This
@@ -48,10 +75,16 @@ type Ingester interface {
 	// error: Returns and error if there is an issue.
 	Ingest(outQueue Queue, doneChan <-chan struct{}, waitGroup *sync.WaitGroup) error
 
-	// Returns marshalled stats NOTE: MUST be thread safe
+	// Returns marshalled stats
+	//
+	// NOTE: Stats functions run in a different thread than
+	// ingest function therefore access to stats MUST be thread safe
 	Stats() (string, error)
 
-	// Clears stats NOTE: MUST be thread safe
+	// Clears stats
+	//
+	// NOTE: Stats functions run in a different thread than
+	// ingest function therefore access to stats MUST be thread safe
 	ClearStats()
 }
 
@@ -74,10 +107,16 @@ type Digester interface {
 	// error: Returns and error if there is an issue.
 	Digest(inQueue Queue, outQueue Queue, doneChan <-chan struct{}, waitGroup *sync.WaitGroup) error
 
-	// Returns marshalled stats NOTE: MUST be thread safe
+	// Returns marshalled stats
+	//
+	// NOTE: Stats functions run in a different thread than
+	// digest function therefore access to stats MUST be thread safe
 	Stats() (string, error)
 
-	// Clears stats NOTE: MUST be thread safe
+	// Clears stats
+	//
+	// NOTE: Stats functions run in a different thread than
+	// digest function therefore access to stats MUST be thread safe
 	ClearStats()
 }
 
@@ -99,9 +138,15 @@ type Expeller interface {
 	// error: Returns and error if there is an issue.
 	Expel(inQueues []Queue, doneChan <-chan struct{}, waitGroup *sync.WaitGroup) error
 
-	// Returns marshalled stats NOTE: MUST be thread safe
+	// Returns marshalled stats
+	//
+	// NOTE: Stats functions run in a different thread than
+	// digest function therefore access to stats MUST be thread safe
 	Stats() (string, error)
 
-	// Clears stats NOTE: MUST be thread safe
+	// Clears stats
+	//
+	// NOTE: Stats functions run in a different thread than
+	// expel function therefore access to stats MUST be thread safe
 	ClearStats()
 }
