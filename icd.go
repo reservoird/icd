@@ -46,13 +46,13 @@ type Queue interface {
 
 	// Monitor provides a method for statistics and clears statistics
 	//
-	// NOTE: monitor runs in a separate thread
-	Monitor(<-chan string, chan<- struct{})
+	// NOTE: monitor runs in a separate thread from queue access functions
+	Monitor(chan<- string, <-chan struct{}, <-chan struct{}, *sync.WaitGroup)
 }
 
 // Ingester is the inteface for the reservoird ingester plugin type. This
 // plugin type ingests data from a data source and forwards that data through
-// the queue for further processing. This is the source points
+// the queue for further processing. This is a source point.
 type Ingester interface {
 	// Name provides the name of the ingest plugin
 	Name() string
@@ -70,8 +70,8 @@ type Ingester interface {
 
 	// Monitor provides a method for statistics and clears statistics
 	//
-	// NOTE: monitor runs in a separate thread
-	Monitor(<-chan string, chan<- struct{})
+	// NOTE: monitor runs in a separate thread from Ingest
+	Monitor(chan<- string, <-chan struct{}, <-chan struct{}, *sync.WaitGroup)
 }
 
 // Digester is the inteface for the reservoird digester plugin type. This
@@ -95,13 +95,13 @@ type Digester interface {
 
 	// Monitor provides a method for statistics and clears statistics
 	//
-	// NOTE: monitor runs in a separate thread
-	Monitor(<-chan string, chan<- struct{})
+	// NOTE: monitor runs in a separate thread from Digest
+	Monitor(chan<- string, <-chan struct{}, <-chan struct{}, *sync.WaitGroup)
 }
 
 // Expeller is the inteface for the reservoird expeller plugin type. This
 // plugin type receives data from a queue and expels the data outside of reservorid.
-// This is the termination points.
+// This is the termination point.
 type Expeller interface {
 	// Name provides the name of the expeller plugin
 	Name() string
@@ -119,6 +119,6 @@ type Expeller interface {
 
 	// Monitor provides a method for statistics and clears statistics
 	//
-	// NOTE: monitor runs in a separate thread
-	Monitor(<-chan string, chan<- struct{})
+	// NOTE: monitor runs in a separate thread from Expel
+	Monitor(chan<- string, <-chan struct{}, <-chan struct{}, *sync.WaitGroup)
 }

@@ -35,25 +35,30 @@ func Ingest(queue Queue, doneChan <-chan struct{}, wg *sync.WaitGroup) {
     //
     // reads from stdin and writes to queue
     //
-    // non-blocking listen on clearChan each loop, if received clears statistics
+    // non-blocking listen on ingest clearChan each loop, if received clears statistics
+    // FLOW: reservoird => monitor => ingest
     //
-    // non-blocking listen on doneChan each loop to see if reservoird is shutting down gracefully
+    // non-blocking listen on reservoird doneChan each loop to see if reservoird is shutting down gracefully
+    // FLOW: reservoird => ingest
     // NOTE: only senders should close the queue
     //
-    // non-blocking send to statsChan which provides the latest snapshot of statistics
+    // non-blocking send to ingest statsChan which provides the latest snapshot of statistics
+    // FLOW: ingest => monitor => reservoird
 }
 
-// returns marshalled statistics
-func Stats() (stats string, err error) {
-    // non-blocking listen on statsChan
+// long running function which provides statistics and a means to clear statistics
+func Monitor(statsChan chan<- string, clearChan <-chan struct{}, doneChan <-chan struct{}, wg *sync.WaitGroup) {
+    // first line of the function must be wg.Done() as reseroird waits for all threads to stop
+    // before exiting.
     //
-    // marshals received statistics message
+    // get stats from ingest thread
     //
-    // returns statistics to caller 
-}
-
-// clears statistics
-func ClearStats() {
-    // non-blocking send to clearChan which initiates the clearing of statistics
+    // marshal statistics
+    //
+    // non-blocking sent statistics to reservoird statsChan
+    // FLOW: ingest => monitor => reservoird
+    //
+    // non-blocking read of reservoird clearChan, if received clear stats from ingest thread
+    // FLOW: reservoird => monitor => ingest
 }
 ```
