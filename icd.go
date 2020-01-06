@@ -57,6 +57,9 @@ type Ingester interface {
 	// Name provides the name of the ingest plugin
 	Name() string
 
+	// Running returns whether or not ingest is running
+	Running() bool
+
 	// Ingest is a long running function which captures and forwards data
 	// through the queue for further processing
 	//
@@ -80,6 +83,9 @@ type Ingester interface {
 type Digester interface {
 	// Name provides the name of the digest plugin
 	Name() string
+
+	// Running returns whether or not digest is running
+	Running() bool
 
 	// Digest is a long running function which captures data from one queue,
 	// processes, and then forwards data through another queue for further processing
@@ -105,6 +111,9 @@ type Digester interface {
 type Expeller interface {
 	// Name provides the name of the expeller plugin
 	Name() string
+
+	// Running returns whether or not expel is running
+	Running() bool
 
 	// Expeller is a long running function which captures data from one queue,
 	// processes, and then forwards data through another queue for further processing
