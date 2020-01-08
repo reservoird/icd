@@ -81,7 +81,7 @@ type Ingester interface {
 		// Call 'defer waitGroup.Done()' on function start. Reservoird
 		// uses this variable to wait for all threads to stop before exiting
 		waitGroup *sync.WaitGroup,
-	) error // Returns an error if there is an issue
+	)
 
 	// Monitor provides a method for sending statistics messages
 	// and for receiving the clear statistisics message and the done message.
@@ -126,7 +126,7 @@ type Digester interface {
 		// Call 'defer waitGroup.Done()' on function start. Reservoird
 		// uses this variable to wait for all threads to stop before exiting
 		waitGroup *sync.WaitGroup,
-	) error // Returns an error if there is an issue.
+	)
 
 	// Monitor provides a method for sending statistics messages
 	// and for receiving the clear statistisics message and the done message.
@@ -168,7 +168,7 @@ type Expeller interface {
 		// Call 'defer waitGroup.Done()' on function start. Reservoird
 		// uses this variable to wait for all threads to stop before exiting
 		waitGroup *sync.WaitGroup,
-	) error // Returns an error if there is an issue.
+	)
 
 	// Monitor provides a method for sending statistics messages
 	// and for receiving the clear statistisics message and the done message.
