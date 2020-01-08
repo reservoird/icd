@@ -29,7 +29,7 @@ func New(cfg string) (icd.Ingester, error) {
 }
 
 // long running function with reads from stdin and adds the result to the Queue.
-func Ingest(queue Queue, doneChan <-chan struct{}, wg *sync.WaitGroup) {
+func Ingest(sendQueue Queue, doneChan <-chan struct{}, wg *sync.WaitGroup) {
     // first line of the function must be wg.Done() as reservoird waits for all threads to stop
     // before exiting.
     //
@@ -38,12 +38,12 @@ func Ingest(queue Queue, doneChan <-chan struct{}, wg *sync.WaitGroup) {
     // non-blocking listen on ingest clearChan each loop, if received clears statistics
     // FLOW: reservoird => monitor => ingest
     //
+    // non-blocking send to ingest statsChan which provides the latest snapshot of statistics
+    // FLOW: ingest => monitor => reservoird
+    //
     // non-blocking listen on reservoird doneChan each loop to see if reservoird is shutting down gracefully
     // FLOW: reservoird => ingest
     // NOTE: only senders should close the queue
-    //
-    // non-blocking send to ingest statsChan which provides the latest snapshot of statistics
-    // FLOW: ingest => monitor => reservoird
 }
 
 // long running function which provides statistics and a means to clear statistics
@@ -60,5 +60,8 @@ func Monitor(statsChan chan<- string, clearChan <-chan struct{}, doneChan <-chan
     //
     // non-blocking read of reservoird clearChan, if received clear stats from ingest thread
     // FLOW: reservoird => monitor => ingest
+    //
+    // non-blocking listen on reservoird doneChan each loop to see if reservoird is shutting down gracefully
+    // FLOW: reservoird => monitor
 }
 ```
