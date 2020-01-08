@@ -20,22 +20,20 @@ type Queue interface {
 	// Name provides the name of the queue
 	Name() string
 
-	// Put puts an item into the queue
+	// Put puts an item into the the queue
 	Put(interface{}) error
 
 	// Get gets the next item from the queue
 	Get() (interface{}, error)
 
-	// Peek peeks at the next item in the queue
-	Peek() (interface{}, error)
-
-	// Len returns the length of the queue
+	// Len returns the number of items in the queue
 	Len() int
 
-	// Cap returns the capacity of the queue, if unbounded return -1
+	// Cap returns the maximum number of items the queue can hold,
+	// if unbounded return -1
 	Cap() int
 
-	// Clears the queue
+	// Clears the queue, i.e. Len() = 0
 	Clear()
 
 	// Close closes the queue, no longer usable
@@ -44,42 +42,67 @@ type Queue interface {
 	// Closed returns whether or not the queue is closed
 	Closed() bool
 
-	// Monitor provides a method for statistics and clears statistics
+	// Monitor provides a method for sending statistics messages
+	// and for receiving the clear statistisics message and the done message.
 	//
-	// NOTE: monitor runs in a separate thread from queue access functions
-	Monitor(chan<- string, <-chan struct{}, <-chan struct{}, *sync.WaitGroup)
+	// NOTE: monitor runs in a separate thread from queue access functions.
+	Monitor(
+		// The channel to send statistics messages
+		statsChan chan<- string,
+		// The channel to receive the clear message to clear statistics
+		clearChan <-chan struct{},
+		// The channel to receive the done message and initiate a graceful shutdown
+		doneChan <-chan struct{},
+		// Call 'defer waitGroup.Done()' on function start. Reservoird
+		// uses this variable to wait for all threads to stop before exiting
+		waitGroup *sync.WaitGroup,
+	)
 }
 
 // Ingester is the inteface for the reservoird ingester plugin type. This
 // plugin type ingests data from a data source and forwards that data through
-// the queue for further processing. This is a source point.
+// the queue for further processing.
+//
+// This is considered the input into reservoird.
 type Ingester interface {
-	// Name provides the name of the ingest plugin
+	// Name returns the name of the ingest plugin
 	Name() string
 
 	// Running returns whether or not ingest is running
 	Running() bool
 
 	// Ingest is a long running function which captures and forwards data
-	// through the queue for further processing
-	//
-	// outQueue: The queue which data is forwarded through
-	// doneChan: The channel used to gracefully stop the long running function.
-	//     If data is present on this channel initiate graceful shutdown
-	// waitGroup: Call 'waitGroup.Done()' on function start. Reservoird uses
-	//     this variable to wait for all threads to stop before exiting
-	// error: Returns and error if there is an issue.
-	Ingest(outQueue Queue, doneChan <-chan struct{}, waitGroup *sync.WaitGroup) error
+	// through the queue for further processing.
+	Ingest(
+		// The queue which data is forwarded through
+		sendQueue Queue,
+		// The channel to receive the done message and initiate a graceful shutdown
+		doneChan <-chan struct{},
+		// Call 'defer waitGroup.Done()' on function start. Reservoird
+		// uses this variable to wait for all threads to stop before exiting
+		waitGroup *sync.WaitGroup,
+	) error // Returns an error if there is an issue
 
-	// Monitor provides a method for statistics and clears statistics
+	// Monitor provides a method for sending statistics messages
+	// and for receiving the clear statistisics message and the done message.
 	//
-	// NOTE: monitor runs in a separate thread from Ingest
-	Monitor(chan<- string, <-chan struct{}, <-chan struct{}, *sync.WaitGroup)
+	// NOTE: monitor runs in a separate thread from Ingest.
+	Monitor(
+		// The channel to send statistics messages
+		statsChan chan<- string,
+		// The channel to receive the clear message to clear statistics
+		clearChan <-chan struct{},
+		// The channel to receive the done message and initiate a graceful shutdown
+		doneChan <-chan struct{},
+		// Call 'defer waitGroup.Done()' on function start. Reservoird
+		// uses this variable to wait for all threads to stop before exiting
+		waitGroup *sync.WaitGroup,
+	)
 }
 
 // Digester is the inteface for the reservoird digester plugin type. This
-// plugin type digests data from an ingester queue and forwards that data through
-// the another queue for further processing.
+// plugin type digests data from an ingester queue and forwards that
+// data through the another queue for further processing.
 type Digester interface {
 	// Name provides the name of the digest plugin
 	Name() string
@@ -88,26 +111,45 @@ type Digester interface {
 	Running() bool
 
 	// Digest is a long running function which captures data from one queue,
-	// processes, and then forwards data through another queue for further processing
+	// processes the data, then forwards the processed data through
+	// another queue for further processing.
 	//
-	// inQueue: The queue which the digester receives data from
-	// outQueue: The queue which the digester forwards data through
-	// doneChan: The channel used to gracefully stop the long running function.
-	//     If data is present on this channel initiate graceful shutdown
-	// waitGroup: Call 'waitGroup.Done()' on function start. Reservoird uses
-	//     this variable to wait for all threads to stop before exiting
-	// error: Returns and error if there is an issue.
-	Digest(inQueue Queue, outQueue Queue, doneChan <-chan struct{}, waitGroup *sync.WaitGroup) error
+	// This is considered the filters, annotations, and transformation
+	// within reservoird.
+	Digest(
+		// recvQueue: The queue which data is received from
+		recvQueue Queue,
+		// The queue which data is forwarded through
+		sendQueue Queue,
+		// The channel to receive the done message and initiate a graceful shutdown
+		doneChan <-chan struct{},
+		// Call 'defer waitGroup.Done()' on function start. Reservoird
+		// uses this variable to wait for all threads to stop before exiting
+		waitGroup *sync.WaitGroup,
+	) error // Returns an error if there is an issue.
 
-	// Monitor provides a method for statistics and clears statistics
+	// Monitor provides a method for sending statistics messages
+	// and for receiving the clear statistisics message and the done message.
 	//
-	// NOTE: monitor runs in a separate thread from Digest
-	Monitor(chan<- string, <-chan struct{}, <-chan struct{}, *sync.WaitGroup)
+	// NOTE: monitor runs in a separate thread from Digest.
+	Monitor(
+		// The channel to send statistics messages
+		statsChan chan<- string,
+		// The channel to receive the clear message to clear statistics
+		clearChan <-chan struct{},
+		// The channel to receive the done message and initiate a graceful shutdown
+		doneChan <-chan struct{},
+		// Call 'defer waitGroup.Done()' on function start. Reservoird
+		// uses this variable to wait for all threads to stop before exiting
+		waitGroup *sync.WaitGroup,
+	)
 }
 
 // Expeller is the inteface for the reservoird expeller plugin type. This
-// plugin type receives data from a queue and expels the data outside of reservorid.
-// This is the termination point.
+// plugin type receives data from a queue and expels the data outside
+// of reservorid.
+//
+// This is considered the output of reservoird.
 type Expeller interface {
 	// Name provides the name of the expeller plugin
 	Name() string
@@ -116,18 +158,31 @@ type Expeller interface {
 	Running() bool
 
 	// Expeller is a long running function which captures data from one queue,
-	// processes, and then forwards data through another queue for further processing
-	//
-	// inQueues: The queues which the expeller receives data from
-	// doneChan: The channel used to gracefully stop the long running function.
-	//     If data is present on this channel initiate graceful shutdown
-	// waitGroup: Call 'waitGroup.Done()' on function start. Reservoird uses
-	//     this variable to wait for all threads to stop before exiting
-	// error: Returns and error if there is an issue.
-	Expel(inQueues []Queue, doneChan <-chan struct{}, waitGroup *sync.WaitGroup) error
+	// processes, and then forwards data through another queue for
+	// further processing.
+	Expel(
+		// The queues which data is received from
+		recvQueues []Queue,
+		// The channel to receive the done message and initiate a graceful shutdown
+		doneChan <-chan struct{},
+		// Call 'defer waitGroup.Done()' on function start. Reservoird
+		// uses this variable to wait for all threads to stop before exiting
+		waitGroup *sync.WaitGroup,
+	) error // Returns an error if there is an issue.
 
-	// Monitor provides a method for statistics and clears statistics
+	// Monitor provides a method for sending statistics messages
+	// and for receiving the clear statistisics message and the done message.
 	//
-	// NOTE: monitor runs in a separate thread from Expel
-	Monitor(chan<- string, <-chan struct{}, <-chan struct{}, *sync.WaitGroup)
+	// NOTE: monitor runs in a separate thread from Expel.
+	Monitor(
+		// The channel to send statistics messages
+		statsChan chan<- string,
+		// The channel to receive the clear message to clear statistics
+		clearChan <-chan struct{},
+		// The channel to receive the done message and initiate a graceful shutdown
+		doneChan <-chan struct{},
+		// Call 'defer waitGroup.Done()' on function start. Reservoird
+		// uses this variable to wait for all threads to stop before exiting
+		waitGroup *sync.WaitGroup,
+	)
 }
