@@ -3,16 +3,16 @@
 // must provide a 'New' function with the following function signature:
 //
 //	Queues:
-//		New(cfg string, monitor *icd.Monitor) (icd.Queue, error)
+//		New(cfg string) (icd.Queue, error)
 //
 //	Ingesters:
-//		New(cfg string, flow *icd.Flow, monitor *icd.Monitor) (icd.Ingester, error)
+//		New(cfg string) (icd.Ingester, error)
 //
 //	Digesters:
-//		New(cfg string, flow *icd.Flow, monitor *icd.Monitor) (icd.Digester, error)
+//		New(cfg string) (icd.Digester, error)
 //
 //	Expellers:
-//		New(cfg string, flow *icd.Flow, monitor *icd.Monitor) (icd.Expeller, error)
+//		New(cfg string) (icd.Expeller, error)
 //
 // Reservoird will not start plugins without the New function as
 // defined.
@@ -22,17 +22,8 @@ import (
 	"sync"
 )
 
-// Flow provides channels and control for the flow threads
-type Flow struct {
-	// The channel to receive the done message and initiate a graceful shutdown
-	DoneChan chan struct{}
-	// Call 'defer WaitGroup.Done()' on flow function start. Reservoird
-	// uses this variable to wait for all threads to stop before exiting
-	WaitGroup *sync.WaitGroup
-}
-
-// Monitor provides channels and control for the monitor threads
-type Monitor struct {
+// Control is used for monitor and control of reservoird threads
+type Control struct {
 	// The channel to send statistics messages
 	StatsChan chan string
 	// The channel to receive the clear message to clear statistics
@@ -41,7 +32,7 @@ type Monitor struct {
 	ErrorChan chan error
 	// The channel to receive the done message and initiate a graceful shutdown
 	DoneChan chan struct{}
-	// Call 'defer WaitGroup.Done()' on monitor function start. Reservoird
+	// Call 'defer WaitGroup.Done()' on flow function start. Reservoird
 	// uses this variable to wait for all threads to stop before exiting
 	WaitGroup *sync.WaitGroup
 }
@@ -80,7 +71,10 @@ type Queue interface {
 	// and for receiving the clear statistisics message and the done message.
 	//
 	// NOTE: monitor runs in a separate thread from queue access functions.
-	Monitor()
+	Monitor(
+		// Provides the monitor and control
+		*Control,
+	)
 }
 
 // Ingester is the inteface for the reservoird ingester plugin type. This
@@ -100,13 +94,9 @@ type Ingester interface {
 	Ingest(
 		// The queue which data is forwarded through
 		sendQueue Queue,
+		// Provies monitor and control
+		control *Control,
 	)
-
-	// Monitor provides a method for sending statistics messages
-	// and for receiving the clear statistisics message and the done message.
-	//
-	// NOTE: monitor runs in a separate thread from Ingest.
-	Monitor()
 }
 
 // Digester is the inteface for the reservoird digester plugin type. This
@@ -130,13 +120,9 @@ type Digester interface {
 		recvQueue Queue,
 		// The queue which data is forwarded through
 		sendQueue Queue,
+		// Provides monitor and control
+		control *Control,
 	)
-
-	// Monitor provides a method for sending statistics messages
-	// and for receiving the clear statistisics message and the done message.
-	//
-	// NOTE: monitor runs in a separate thread from Digest.
-	Monitor()
 }
 
 // Expeller is the inteface for the reservoird expeller plugin type. This
@@ -157,11 +143,7 @@ type Expeller interface {
 	Expel(
 		// The queue(s) which data is received from
 		recvQueues []Queue,
+		// Provides monitor and control
+		control *Control,
 	)
-
-	// Monitor provides a method for sending statistics messages
-	// and for receiving the clear statistisics message and the done message.
-	//
-	// NOTE: monitor runs in a separate thread from Expel.
-	Monitor()
 }
