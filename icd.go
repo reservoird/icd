@@ -25,25 +25,25 @@ import (
 // Flow provides channels and control for the flow threads
 type Flow struct {
 	// The channel to receive the done message and initiate a graceful shutdown
-	doneChan chan struct{}
-	// Call 'defer waitGroup.Done()' on flow function start. Reservoird
+	DoneChan chan struct{}
+	// Call 'defer WaitGroup.Done()' on flow function start. Reservoird
 	// uses this variable to wait for all threads to stop before exiting
-	wg *sync.WaitGroup
+	WaitGroup *sync.WaitGroup
 }
 
 // Monitor provides channels and control for the monitor threads
 type Monitor struct {
 	// The channel to send statistics messages
-	statsChan chan string
+	StatsChan chan string
 	// The channel to receive the clear message to clear statistics
-	clearChan chan struct{}
+	ClearChan chan struct{}
 	// The channel to report error messages
-	errorChan chan error
+	ErrorChan chan error
 	// The channel to receive the done message and initiate a graceful shutdown
-	doneChan chan struct{}
-	// Call 'defer waitGroup.Done()' on monitor function start. Reservoird
+	DoneChan chan struct{}
+	// Call 'defer WaitGroup.Done()' on monitor function start. Reservoird
 	// uses this variable to wait for all threads to stop before exiting
-	wg *sync.WaitGroup
+	WaitGroup *sync.WaitGroup
 }
 
 // Queue is the inteface for the reservoird queue plugin type.
