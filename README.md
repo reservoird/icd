@@ -24,13 +24,13 @@ import (
     // any dependancies
 )
 
-func New(cfg string) (icd.Ingester, error) {
+func New(cfg string, flow *icd.Flow, monitor *icd.Monitor) (icd.Ingester, error) {
     // Set up and configure stdin ingester
 }
 
 // long running function with reads from stdin and adds the result to the Queue.
-func Ingest(sendQueue Queue, doneChan <-chan struct{}, wg *sync.WaitGroup) {
-    // first line of the function must be wg.Done() as reservoird waits for all threads to stop
+func Ingest(sendQueue Queue) {
+    // first line of the function must be flow.wg.Done() as reservoird waits for all threads to stop
     // before exiting.
     //
     // reads from stdin and writes to queue
@@ -41,27 +41,33 @@ func Ingest(sendQueue Queue, doneChan <-chan struct{}, wg *sync.WaitGroup) {
     // non-blocking send to ingest statsChan which provides the latest snapshot of statistics
     // FLOW: ingest => monitor => reservoird
     //
+    // non-blocking send to ingest errorChan which provides the latest snapshot of statistics
+    // FLOW: ingest => monitor => reservoird
+    //
     // non-blocking listen on reservoird doneChan each loop to see if reservoird is shutting down gracefully
     // FLOW: reservoird => ingest
     // NOTE: only senders should close the queue
 }
 
 // long running function which provides statistics and a means to clear statistics
-func Monitor(statsChan chan<- string, clearChan <-chan struct{}, doneChan <-chan struct{}, wg *sync.WaitGroup) {
-    // first line of the function must be wg.Done() as reseroird waits for all threads to stop
+func Monitor() {
+    // first line of the function must be monitor.wg.Done() as reseroird waits for all threads to stop
     // before exiting.
     //
     // get stats from ingest thread
     //
     // marshal statistics
     //
-    // non-blocking sent statistics to reservoird statsChan
+    // non-blocking send statistics to reservoird monitor.statsChan
     // FLOW: ingest => monitor => reservoird
     //
-    // non-blocking read of reservoird clearChan, if received clear stats from ingest thread
+    // non-blocking send error to reservoird monitor.errorChan
+    // FLOW: ingest => monitor => reservoird
+    //
+    // non-blocking read of reservoird monitor.clearChan, if received clear stats from ingest thread
     // FLOW: reservoird => monitor => ingest
     //
-    // non-blocking listen on reservoird doneChan each loop to see if reservoird is shutting down gracefully
+    // non-blocking listen on reservoird monitor.doneChan each loop to see if reservoird is shutting down gracefully
     // FLOW: reservoird => monitor
 }
 ```
