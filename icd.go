@@ -28,8 +28,6 @@ type MonitorControl struct {
 	StatsChan chan interface{}
 	// The channel to receive the clear message to clear statistics
 	ClearChan chan struct{}
-	// The channel to report error messages
-	ErrorChan chan error
 	// The channel to receive the done message and initiate a graceful shutdown
 	DoneChan chan struct{}
 	// Call 'defer WaitGroup.Done()' on function start. Reservoird
