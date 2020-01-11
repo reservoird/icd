@@ -22,17 +22,17 @@ import (
 	"sync"
 )
 
-// Control is used for monitor and control of reservoird threads
-type Control struct {
+// MonitorControl contain what is needed to monitor and control of reservoird threads
+type MonitorControl struct {
 	// The channel to send statistics messages
-	StatsChan chan string
+	StatsChan chan interface{}
 	// The channel to receive the clear message to clear statistics
 	ClearChan chan struct{}
 	// The channel to report error messages
 	ErrorChan chan error
 	// The channel to receive the done message and initiate a graceful shutdown
 	DoneChan chan struct{}
-	// Call 'defer WaitGroup.Done()' on flow function start. Reservoird
+	// Call 'defer WaitGroup.Done()' on function start. Reservoird
 	// uses this variable to wait for all threads to stop before exiting
 	WaitGroup *sync.WaitGroup
 }
@@ -67,13 +67,10 @@ type Queue interface {
 	// Closed returns whether or not the queue is closed
 	Closed() bool
 
-	// Monitor provides a method for sending statistics messages
-	// and for receiving the clear statistisics message and the done message.
-	//
-	// NOTE: monitor runs in a separate thread from queue access functions.
+	// Monitor provides monitoring of queue
 	Monitor(
 		// Provides the monitor and control
-		*Control,
+		mc *MonitorControl,
 	)
 }
 
@@ -93,9 +90,9 @@ type Ingester interface {
 	// through the queue for further processing.
 	Ingest(
 		// The queue which data is forwarded through
-		sendQueue Queue,
+		snd Queue,
 		// Provies monitor and control
-		control *Control,
+		mc *MonitorControl,
 	)
 }
 
@@ -117,11 +114,11 @@ type Digester interface {
 	// within reservoird.
 	Digest(
 		// The queue which data is received from
-		recvQueue Queue,
+		rcv Queue,
 		// The queue which data is forwarded through
-		sendQueue Queue,
+		snd Queue,
 		// Provides monitor and control
-		control *Control,
+		mc *MonitorControl,
 	)
 }
 
@@ -142,8 +139,8 @@ type Expeller interface {
 	// further processing.
 	Expel(
 		// The queue(s) which data is received from
-		recvQueues []Queue,
+		rcv []Queue,
 		// Provides monitor and control
-		control *Control,
+		mc *MonitorControl,
 	)
 }
