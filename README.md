@@ -36,38 +36,16 @@ func Ingest(sendQueue Queue) {
     // reads from stdin and writes to queue
     //
     // non-blocking listen on ingest clearChan each loop, if received clears statistics
-    // FLOW: reservoird => monitor => ingest
+    // FLOW: reservoird => ingest
     //
     // non-blocking send to ingest statsChan which provides the latest snapshot of statistics
-    // FLOW: ingest => monitor => reservoird
-    //
-    // non-blocking send to ingest errorChan which provides the latest snapshot of statistics
-    // FLOW: ingest => monitor => reservoird
+    // FLOW: ingest => reservoird
     //
     // non-blocking listen on reservoird doneChan each loop to see if reservoird is shutting down gracefully
     // FLOW: reservoird => ingest
     // NOTE: only senders should close the queue
-}
-
-// long running function which provides statistics and a means to clear statistics
-func Monitor() {
-    // first line of the function must be monitor.wg.Done() as reseroird waits for all threads to stop
-    // before exiting.
     //
-    // get stats from ingest thread
-    //
-    // marshal statistics
-    //
-    // non-blocking send statistics to reservoird monitor.statsChan
-    // FLOW: ingest => monitor => reservoird
-    //
-    // non-blocking send error to reservoird monitor.errorChan
-    // FLOW: ingest => monitor => reservoird
-    //
-    // non-blocking read of reservoird monitor.clearChan, if received clear stats from ingest thread
-    // FLOW: reservoird => monitor => ingest
-    //
-    // non-blocking listen on reservoird monitor.doneChan each loop to see if reservoird is shutting down gracefully
-    // FLOW: reservoird => monitor
+    // blocking send to finalStatsChan right before exit makes sure final statistics are received by reservoird
+    // FLOW: ingest => reservoird
 }
 ```

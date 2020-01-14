@@ -26,6 +26,8 @@ import (
 type MonitorControl struct {
 	// The channel to send statistics messages
 	StatsChan chan interface{}
+	// The channel to send final stats before shutting down. Only send on shutdown.
+	FinalStatsChan chan interface{}
 	// The channel to receive the clear message to clear statistics
 	ClearChan chan struct{}
 	// The channel to receive the done message and initiate a graceful shutdown
