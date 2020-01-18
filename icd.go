@@ -61,6 +61,9 @@ type Queue interface {
 	// Clears the queue, i.e. Len() = 0
 	Clear()
 
+	// Reset resets queue so its usable again
+	Reset()
+
 	// Close closes the queue, no longer usable
 	Close() error
 
